@@ -1,0 +1,32 @@
+service: ecreplacewithframework
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+frameworkVersion: '3'
+
+# Add the serverless-webpack plugin
+plugins:
+  - serverless-webpack
+  - serverless-api-gateway-throttling
+  - serverless-iam-roles-per-function
+  
+custom:
+  apiGatewayThrottling:
+    maxRequestsPerSecond: 10
+    maxConcurrentRequests: 5
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: ap-northeast-1
+  httpApi:
+    cors:
+      allowedOrigins:
+        - 'http://localhost:3000'
+
+functions:
+  first:
+    handler: first.hello
+  second:
+    handler: second.hello
+  
