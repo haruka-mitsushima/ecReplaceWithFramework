@@ -1,5 +1,27 @@
 import { DynamoDB } from 'aws-sdk'
 
+export async function preTop(event, context) {
+    const genre = event.queryStringParameters.genre
+    const documentClient = new DynamoDB.DocumentClient({
+        apiVersion: '2012-08-10',
+        region: 'ap-northeast-1'
+    })
+    const newItems = await documentClient.scan({
+        TableName: "items",
+        Limit: 10
+    }).promise()
+    const genreItems = await documentClient.scan({
+        TableName: "items",
+        ExpressionAttributeValues: {
+            ':topic' : parseInt(genre)
+        },
+        FilterExpression: 'contains (categories, :topic)',
+        Limit: 10
+    }).promise()
+    
+    return {newItems: newItems.Items, genreItems: genreItems.Items}
+}
+
 export async function getItemByGenre(event, context) {
     const genre = event.queryStringParameters.genre
     const documentClient = new DynamoDB.DocumentClient({

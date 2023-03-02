@@ -29,6 +29,17 @@ functions:
     handler: first.hello
   second:
     handler: second.hello
+  preTop:
+    handler: src/itemHandler.preTop
+    events:
+      - httpApi:
+          method: get
+          path: /preTop
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+        Resource: 'arn:aws:dynamodb:*:*:table/items'
   getItemByGenre:
     handler: src/itemHandler.getItemByGenre
     events:
