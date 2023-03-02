@@ -29,4 +29,37 @@ functions:
     handler: first.hello
   second:
     handler: second.hello
+  getItemByGenre:
+    handler: src/itemHandler.getItemByGenre
+    events:
+      - httpApi:
+          method: get
+          path: /getItemByGenre
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+        Resource: 'arn:aws:dynamodb:*:*:table/items'
+  getItems:
+    handler: src/itemHandler.getItems
+    events:
+      - httpApi:
+          method: get
+          path: /getItems
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+        Resource: 'arn:aws:dynamodb:*:*:table/items'
+  getItemById:
+    handler: src/itemHandler.getItemById
+    events:
+      - httpApi:
+          method: get
+          path: /getItemById
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: 'arn:aws:dynamodb:*:*:table/items'
   
