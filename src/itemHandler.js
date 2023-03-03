@@ -16,10 +16,9 @@ export async function preTop(event, context) {
             ':topic' : parseInt(genre)
         },
         FilterExpression: 'contains (categories, :topic)',
-        Limit: 10
     }).promise()
     
-    return {newItems: newItems.Items, genreItems: genreItems.Items}
+    return {newItems: newItems.Items, genreItems: genreItems.Items.slice(-9)}
 }
 
 export async function getItemByGenre(event, context) {
