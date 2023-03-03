@@ -29,6 +29,17 @@ functions:
     handler: first.hello
   second:
     handler: second.hello
+  getUserById:
+    handler: src/userHandler.getUserById
+    events:
+      - httpApi:
+          method: get
+          path: /getUser
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: 'arn:aws:dynamodb:*:*:table/users'
   preTop:
     handler: src/itemHandler.preTop
     events:
