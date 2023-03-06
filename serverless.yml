@@ -29,6 +29,28 @@ functions:
     handler: first.hello
   second:
     handler: second.hello
+  selectRentalHistories:
+    handler: src/userHandler.selectRentalHistories
+    events:
+      - httpApi:
+          method: get
+          path: /selectRentalHistories
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: 'arn:aws:dynamodb:*:*:table/users'
+  selectCart:
+    handler: src/userHandler.selectCart
+    events:
+      - httpApi:
+          method: get
+          path: /selectCart
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+        Resource: 'arn:aws:dynamodb:*:*:table/users'
   getAllItems:
     handler: src/itemHandler.getAllItems
     events:
@@ -138,10 +160,10 @@ resources:
         Properties:
           TableName: users
           AttributeDefinitions:
-            - AttributeName: mailAddress
+            - AttributeName: id
               AttributeType: S
           KeySchema:
-            - AttributeName: mailAddress
+            - AttributeName: id
               KeyType: HASH
           ProvisionedThroughput:
             ReadCapacityUnits: 5
