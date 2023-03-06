@@ -29,6 +29,17 @@ functions:
     handler: first.hello
   second:
     handler: second.hello
+  getAllItems:
+    handler: src/itemHandler.getAllItems
+    events:
+      - httpApi:
+          method: get
+          path: /getAllItems
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+        Resource: 'arn:aws:dynamodb:*:*:table/items'
   login:
     handler: src/userHandler.login
     events:
@@ -39,6 +50,30 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:Query
+        Resource: 'arn:aws:dynamodb:*:*:table/users'
+  addLogedinCart:
+    handler: src/userHandler.addLogedinCart
+    events:
+      - httpApi:
+          method: post
+          path: /addLogedinCart
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: 'arn:aws:dynamodb:*:*:table/users'
+  addCart:
+    handler: src/userHandler.addCart
+    events:
+      - httpApi:
+          method: post
+          path: /addCart
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
         Resource: 'arn:aws:dynamodb:*:*:table/users'
   getUserById:
     handler: src/userHandler.getUserById
