@@ -29,6 +29,17 @@ functions:
     handler: first.hello
   second:
     handler: second.hello
+  login:
+    handler: src/userHandler.login
+    events:
+      - httpApi:
+          method: post
+          path: /login
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: 'arn:aws:dynamodb:*:*:table/users'
   getUserById:
     handler: src/userHandler.getUserById
     events:
@@ -85,3 +96,31 @@ functions:
           - dynamodb:GetItem
         Resource: 'arn:aws:dynamodb:*:*:table/items'
   
+resources:
+  Resources:
+    UsersDynamoDBTable: 
+        Type: AWS::DynamoDB::Table
+        Properties:
+          TableName: users
+          AttributeDefinitions:
+            - AttributeName: mailAddress
+              AttributeType: S
+          KeySchema:
+            - AttributeName: mailAddress
+              KeyType: HASH
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+    ItemsDynamoDBTable: 
+        Type: AWS::DynamoDB::Table
+        Properties:
+          TableName: items
+          AttributeDefinitions:
+            - AttributeName: id
+              AttributeType: S
+          KeySchema:
+            - AttributeName: id
+              KeyType: HASH
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
