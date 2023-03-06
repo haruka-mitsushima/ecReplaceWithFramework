@@ -1,5 +1,43 @@
 import { DynamoDB } from 'aws-sdk'
 
+export async function selectRentalHistories(event, context) {
+    const id = event.queryStringParameters.userId
+    const documentClient = new DynamoDB.DocumentClient({
+        apiVersion: '2012-08-10',
+        region: 'ap-northeast-1'
+    })
+    const result = await documentClient.get({
+        TableName: 'users',
+        Key: {
+            'id': id
+        }
+    }).promise()
+    
+    if(result.Item){
+        return { rental: result.Item.rentalHistories }
+    } else {
+        return { rental: [] }
+    }
+    
+    
+}
+
+export async function selectCart(event, context) {
+    const id = event.queryStringParameters.userId
+    const documentClient = new DynamoDB.DocumentClient({
+        apiVersion: '2012-08-10',
+        region: 'ap-northeast-1'
+    })
+    const result = await documentClient.get({
+        TableName: 'users',
+        Key: {
+            'id': id
+        }
+    }).promise()
+    
+    return result.Item.userCarts
+}
+
 export async function addLogedinCart(event, context) {
     const id = event.queryStringParameters.userId
     const requestBody = JSON.parse(event.body)
@@ -10,7 +48,7 @@ export async function addLogedinCart(event, context) {
     const user = await documentClient.get({
         TableName: 'users',
         Key: {
-            'mailAddress': id
+            'id': id
         },
     }).promise()
     
@@ -35,7 +73,7 @@ export async function addLogedinCart(event, context) {
     const result = await documentClient.update({
         TableName: 'users',
         Key: {
-            'mailAddress': id
+            'id': id
         },
         ExpressionAttributeNames: {
           "#AT": "userCarts"
@@ -60,7 +98,7 @@ export async function addCart(event, context) {
     const user = await documentClient.get({
         TableName: 'users',
         Key: {
-            'mailAddress': id
+            'id': id
         },
     }).promise()
     
@@ -82,7 +120,7 @@ export async function addCart(event, context) {
     const result = await documentClient.update({
         TableName: 'users',
         Key: {
-            'mailAddress': id
+            'id': id
         },
         ExpressionAttributeNames: {
           "#AT": "userCarts"
@@ -94,7 +132,7 @@ export async function addCart(event, context) {
         ReturnValues: 'ALL_NEW'
     }).promise()
     
-    return user.Item.userCarts
+    return { isAdd: true }
 }
 
 export async function login(event, context) {
@@ -108,7 +146,7 @@ export async function login(event, context) {
             ':m': requestBody.mailAddress,
             ':pw': requestBody.password
         },
-        KeyConditionExpression: 'mailAddress = :m',
+        KeyConditionExpression: 'id = :m',
         FilterExpression: 'contains (password, :pw)',
         TableName: 'users'
     }).promise()
@@ -125,7 +163,7 @@ export async function getUserById(event, content) {
     
     const result = await documentClient.get({
         TableName: "users",
-        Key: { "mailAddress": id }
+        Key: { "id": id }
     }).promise()
     
     delete result.Item.password
