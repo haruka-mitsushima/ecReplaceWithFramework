@@ -18,8 +18,6 @@ export async function selectRentalHistories(event, context) {
     } else {
         return { rental: [] }
     }
-    
-    
 }
 
 export async function selectCart(event, context) {
@@ -135,23 +133,65 @@ export async function addCart(event, context) {
     return { isAdd: true }
 }
 
+export async function deleteCart(event, context) {
+    const userId = event.queryStringParameters.userId
+    const cartId = event.queryStringParameters.cartId
+    const documentClient = new DynamoDB.DocumentClient({
+        apiVersion: '2012-08-10',
+        region: 'ap-northeast-1'
+    })
+    
+    const user = await documentClient.get({
+        TableName: 'users',
+        Key: {
+            'id': userId
+        },
+    }).promise()
+    
+    const currentCarts = user.Item.userCarts
+    
+    const newCarts = currentCarts.filter(cart => cart.id !== parseInt(cartId))
+    
+     const result = await documentClient.update({
+        TableName: 'users',
+        Key: {
+            'id': userId
+        },
+        ExpressionAttributeNames: {
+          "#AT": "userCarts"
+          }, 
+        ExpressionAttributeValues: {
+            ":t": newCarts
+        }, 
+        UpdateExpression: "SET #AT = :t",
+        ReturnValues: 'ALL_NEW'
+    }).promise()
+    
+    return result.Items
+}
+
 export async function login(event, context) {
     const requestBody = JSON.parse(event.body)
     const documentClient = new DynamoDB.DocumentClient({
         apiVersion: '2012-08-10',
         region: 'ap-northeast-1'
     })
-    const result = await documentClient.query({
+    const users = await documentClient.query({
         ExpressionAttributeValues: {
             ':m': requestBody.mailAddress,
-            ':pw': requestBody.password
         },
         KeyConditionExpression: 'id = :m',
-        FilterExpression: 'contains (password, :pw)',
         TableName: 'users'
     }).promise()
     
-    return result.Items
+    const result = users.Items.filter((user) => user.password === requestBody.password)
+    
+    if(result.length === 1){
+        delete result[0].password
+        return result[0]
+    } else {
+        return {message: 'error'}
+    }
 }
 
 export async function getUserById(event, content) {

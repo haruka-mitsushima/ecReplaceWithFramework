@@ -85,6 +85,18 @@ functions:
           - dynamodb:GetItem
           - dynamodb:UpdateItem
         Resource: 'arn:aws:dynamodb:*:*:table/users'
+  deleteCart:
+    handler: src/userHandler.deleteCart
+    events:
+      - httpApi:
+          method: get
+          path: /deleteCart
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: 'arn:aws:dynamodb:*:*:table/users'
   addCart:
     handler: src/userHandler.addCart
     events:
