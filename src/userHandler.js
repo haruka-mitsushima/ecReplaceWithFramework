@@ -33,7 +33,13 @@ export async function selectCart(event, context) {
         }
     }).promise()
     
-    return result.Item.userCarts
+    let errorFlg = false;
+    if (!result.Item.userCarts) {
+      errorFlg = true;
+      return { errorFlg };
+    } else {
+      return { cart: result.Item.userCarts, errorFlg };
+    }
 }
 
 export async function addLogedinCart(event, context) {
