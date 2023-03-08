@@ -18,8 +18,6 @@ export async function selectRentalHistories(event, context) {
     } else {
         return { rental: [] }
     }
-    
-    
 }
 
 export async function selectCart(event, context) {
@@ -133,6 +131,43 @@ export async function addCart(event, context) {
     }).promise()
     
     return { isAdd: true }
+}
+
+export async function deleteCart(event, context) {
+    const userId = event.queryStringParameters.userId
+    const cartId = event.queryStringParameters.cartId
+    const documentClient = new DynamoDB.DocumentClient({
+        apiVersion: '2012-08-10',
+        region: 'ap-northeast-1'
+    })
+    
+    const user = await documentClient.get({
+        TableName: 'users',
+        Key: {
+            'id': userId
+        },
+    }).promise()
+    
+    const currentCarts = user.Item.userCarts
+    
+    const newCarts = currentCarts.filter(cart => cart.id !== parseInt(cartId))
+    
+     const result = await documentClient.update({
+        TableName: 'users',
+        Key: {
+            'id': userId
+        },
+        ExpressionAttributeNames: {
+          "#AT": "userCarts"
+          }, 
+        ExpressionAttributeValues: {
+            ":t": newCarts
+        }, 
+        UpdateExpression: "SET #AT = :t",
+        ReturnValues: 'ALL_NEW'
+    }).promise()
+    
+    return result.Items
 }
 
 export async function login(event, context) {
