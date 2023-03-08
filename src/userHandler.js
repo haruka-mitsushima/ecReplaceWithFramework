@@ -141,17 +141,22 @@ export async function login(event, context) {
         apiVersion: '2012-08-10',
         region: 'ap-northeast-1'
     })
-    const result = await documentClient.query({
+    const users = await documentClient.query({
         ExpressionAttributeValues: {
             ':m': requestBody.mailAddress,
-            ':pw': requestBody.password
         },
         KeyConditionExpression: 'id = :m',
-        FilterExpression: 'contains (password, :pw)',
         TableName: 'users'
     }).promise()
     
-    return result.Items
+    const result = users.Items.filter((user) => user.password === requestBody.password)
+    
+    if(result.length === 1){
+        delete result[0].password
+        return result[0]
+    } else {
+        return {message: 'error'}
+    }
 }
 
 export async function getUserById(event, content) {
