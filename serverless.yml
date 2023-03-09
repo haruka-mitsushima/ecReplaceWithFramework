@@ -29,6 +29,18 @@ functions:
     handler: first.hello
   second:
     handler: second.hello
+  addRentalHistory:
+    handler: src/userHandler.addRentalHistory
+    events:
+      - httpApi:
+          method: post
+          path: /addRentalHistory
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:UpdateItem
+        Resource: 'arn:aws:dynamodb:*:*:table/users'
   selectRentalHistories:
     handler: src/userHandler.selectRentalHistories
     events:

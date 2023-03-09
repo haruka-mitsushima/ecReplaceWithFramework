@@ -1,5 +1,56 @@
 import { DynamoDB } from 'aws-sdk'
 
+export async function addRentalHistory(event, context) {
+    const id = event.queryStringParameters.userId
+    const requestBody = JSON.parse(event.body)
+    const documentClient = new DynamoDB.DocumentClient({
+        apiVersion: '2012-08-10',
+        region: 'ap-northeast-1'
+    })
+    const user = await documentClient.get({
+        TableName: 'users',
+        Key: {
+            'id': id
+        }
+    }).promise()
+    
+    const newRentalHistory = user.Item.rentalHistories
+    
+    let cartId = 0
+    
+    if(newRentalHistory.length === 0){
+        cartId = 0
+    } else {
+        cartId = parseInt(newRentalHistory.slice(-1)[0].id)
+    }
+    
+    const newItems = requestBody.addItem.map((item) => {
+        cartId += 1
+        item.id = cartId
+        item.itemId = parseInt(item.itemId)
+        return item
+    })
+    
+    newRentalHistory.push(...newItems)
+    
+    const userCarts = []
+    
+    const result = await documentClient.update({
+        TableName: 'users',
+        Key: {
+            'id': id
+        },
+        UpdateExpression: 'set rentalHistories = :t, userCarts = :s',
+        ExpressionAttributeValues: {
+            ':t' : newRentalHistory,
+            ':s' : userCarts
+        },
+        ReturnValues: 'ALL_NEW'
+    }).promise()
+    
+    return {message: 'success'}
+}
+
 export async function selectRentalHistories(event, context) {
     const id = event.queryStringParameters.userId
     const documentClient = new DynamoDB.DocumentClient({
@@ -58,7 +109,13 @@ export async function addLogedinCart(event, context) {
     
     const currentCart = user.Item.userCarts
     
-    let cartId = parseInt(currentCart.slice(-1)[0].id)
+    let cartId = 0
+    
+    if(currentCart.length === 0){
+        cartId = 0
+    } else {
+        cartId = parseInt(currentCart.slice(-1)[0].id)   
+    }
     
     const newItems = requestBody.sessionCart.map((item) => {
         cartId += 1
@@ -68,7 +125,7 @@ export async function addLogedinCart(event, context) {
           "rentalPeriod": item.rentalPeriod,
           "price": item.price,
           "itemImage": item.itemImage,
-          "itemId": item.itemId
+          "itemId": parseInt(item.itemId)
         }
     })
     
@@ -108,7 +165,13 @@ export async function addCart(event, context) {
     
     const currentCart = user.Item.userCarts
     
-    const cartId = parseInt(currentCart.slice(-1)[0].id) + 1
+    let cartId = 0
+    
+    if(currentCart.length === 0){
+        cartId = 1
+    } else {
+        cartId = parseInt(currentCart.slice(-1)[0].id) + 1
+    }
     
     const newItem = {
       "id": cartId,
@@ -116,7 +179,7 @@ export async function addCart(event, context) {
       "rentalPeriod": requestBody.rentalPeriod,
       "price": requestBody.price,
       "itemImage": requestBody.itemImage,
-      "itemId": requestBody.itemId
+      "itemId": parseInt(requestBody.itemId)
     }
     
     currentCart.push(newItem)
