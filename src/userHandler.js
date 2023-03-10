@@ -1,5 +1,50 @@
 import { DynamoDB } from 'aws-sdk'
 
+export async function updateRentalHistory(event, context) {
+    const userId = event.queryStringParameters.userId
+    const rentalHistoryId = event.queryStringParameters.rentalHistoryId
+    const requestBody = JSON.parse(event.body)
+    const documentClient = new DynamoDB.DocumentClient({
+        apiVersion: '2012-08-10',
+        region: 'ap-northeast-1'
+    })
+    const user = await documentClient.get({
+        TableName: 'users',
+        Key: {
+            'id': userId
+        },
+        AttributesToGet: [
+            'rentalHistories',
+        ],
+    }).promise()
+    
+    const newRentalHistory = user.Item.rentalHistories
+    
+    const updateItem = newRentalHistory.filter(item => item.id === parseInt(rentalHistoryId))
+    const currentItem = newRentalHistory.filter(item => item.id !== parseInt(rentalHistoryId))
+    
+    updateItem[0].rentalStart = requestBody.rentalStart
+    updateItem[0].rentalEnd = requestBody.rentalEnd
+    
+    currentItem.push(...updateItem)
+    
+    currentItem.sort((a, b) => a.id - b.id)
+    
+    const result = await documentClient.update({
+        TableName: 'users',
+        Key: {
+            'id': userId
+        },
+        UpdateExpression: 'set rentalHistories = :t',
+        ExpressionAttributeValues: {
+            ':t' : currentItem,
+        },
+        ReturnValues: 'ALL_NEW'
+    }).promise()
+    
+    return JSON.stringify(result)
+}
+
 export async function addRentalHistory(event, context) {
     const id = event.queryStringParameters.userId
     const requestBody = JSON.parse(event.body)
