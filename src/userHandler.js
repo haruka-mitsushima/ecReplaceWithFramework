@@ -1,4 +1,51 @@
 import { DynamoDB } from 'aws-sdk'
+import crypto from 'crypto'
+
+export async function signup(event, context) {
+    const requestBody = JSON.parse(event.body)
+    const documentClient = new DynamoDB.DocumentClient({
+        apiVersion: '2012-08-10',
+        region: 'ap-northeast-1'
+    })
+    
+    const item = {
+        id: crypto.randomUUID(),
+        ...requestBody,
+        rentalHistories: [],
+        userCarts: [],
+        favoriteGenre: 0
+    }
+    await documentClient.put({
+        TableName: 'users',
+        Item: item
+    }).promise()
+    
+    return { message: 'ok' }
+}
+
+export async function mailCondition(event, context) {
+    const requestBody = JSON.parse(event.body)
+    const documentClient = new DynamoDB.DocumentClient({
+        apiVersion: '2012-08-10',
+        region: 'ap-northeast-1'
+    })
+    const users = await documentClient.query({
+        ExpressionAttributeNames: {'#m': 'mailAddress'},
+        ExpressionAttributeValues: {':val': requestBody.mailAddress},
+        KeyConditionExpression: '#m = :val',
+        IndexName: 'mailAddress-index',
+        TableName: 'users'
+    }).promise()
+    
+    if(users.Items.length === 0) {
+        return { result: true }
+    } else {
+        return {
+            result: false,
+            message: 'このメールアドレスはすでに登録済みです',
+        };
+    }
+}
 
 export async function updateRentalHistory(event, context) {
     const userId = event.queryStringParameters.userId
@@ -291,10 +338,10 @@ export async function login(event, context) {
         region: 'ap-northeast-1'
     })
     const users = await documentClient.query({
-        ExpressionAttributeValues: {
-            ':m': requestBody.mailAddress,
-        },
-        KeyConditionExpression: 'id = :m',
+        ExpressionAttributeNames: {'#m': 'mailAddress'},
+        ExpressionAttributeValues: {':val': requestBody.mailAddress},
+        KeyConditionExpression: '#m = :val',
+        IndexName: 'mailAddress-index',
         TableName: 'users'
     }).promise()
     
