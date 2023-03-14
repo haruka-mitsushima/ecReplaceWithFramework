@@ -31,7 +31,8 @@ export async function wordSearch(event, context) {
             itemDetail: item.fields.itemdetail[0],
         }
     })
-        return array
+    
+    return { searchItems: array, count: result.hits.found }
 }
 
 export async function cloudSearch(event, context) {
@@ -66,11 +67,7 @@ export async function cloudSearch(event, context) {
         }
     })
     
-    if(requestBody.keyword.length === 0){
-        return []
-    } else {
-        return array
-    }
+    return { searchItems: array, count: result.hits.found }
 }
 
 export async function search(event, context) {
@@ -108,7 +105,7 @@ export async function search(event, context) {
     
     const returnItem = searchResult.slice(startIndex, startIndex + requestBody.take)
     
-    return returnItem
+    return { searchItems: returnItem, count: result.length}
 }
 
 export async function getNewItems(event, context) {
