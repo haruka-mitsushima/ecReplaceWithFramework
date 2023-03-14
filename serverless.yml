@@ -29,6 +29,55 @@ functions:
     handler: first.hello
   second:
     handler: second.hello
+  wordSearch:
+    handler: src/itemHandler.wordSearch
+    events:
+      - httpApi:
+          method: post
+          path: /wordSearch
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - cloudsearch:Search
+        Resource: 
+          - 'arn:aws:cloudsearch:ap-northeast-1:418581597558:domain/search-test'
+  cloudSearch:
+    handler: src/itemHandler.cloudSearch
+    events:
+      - httpApi:
+          method: post
+          path: /cloudSearch
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - cloudsearch:Search
+        Resource: 
+          - 'arn:aws:cloudsearch:ap-northeast-1:418581597558:domain/search-test'
+  search:
+    handler: src/itemHandler.search
+    events:
+      - httpApi:
+          method: post
+          path: /search
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+          - dynamodb:Scan
+        Resource: 
+          - 'arn:aws:dynamodb:*:*:table/items'
+          - 'arn:aws:dynamodb:*:*:table/items/index/artist'
+  getNewItems:
+    handler: src/itemHandler.getNewItems
+    events:
+      - httpApi:
+          method: get
+          path: /getNewItems
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Scan
+        Resource: 'arn:aws:dynamodb:*:*:table/items'
   updateRentalHistory:
     handler: src/userHandler.updateRentalHistory
     events:
