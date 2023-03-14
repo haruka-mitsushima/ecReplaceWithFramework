@@ -29,6 +29,30 @@ functions:
     handler: first.hello
   second:
     handler: second.hello
+  signup:
+    handler: src/userHandler.signup
+    events:
+      - httpApi:
+          method: post
+          path: /signup
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:PutItem
+        Resource: 'arn:aws:dynamodb:*:*:table/users'
+  mailCondition:
+    handler: src/userHandler.mailCondition
+    events:
+      - httpApi:
+          method: post
+          path: /mailCondition
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: 
+          - 'arn:aws:dynamodb:*:*:table/users'
+          - 'arn:aws:dynamodb:*:*:table/users/index/mailAddress-index'
   wordSearch:
     handler: src/itemHandler.wordSearch
     events:
@@ -64,9 +88,7 @@ functions:
         Action:
           - dynamodb:Query
           - dynamodb:Scan
-        Resource: 
-          - 'arn:aws:dynamodb:*:*:table/items'
-          - 'arn:aws:dynamodb:*:*:table/items/index/artist'
+        Resource: 'arn:aws:dynamodb:*:*:table/items'
   getNewItems:
     handler: src/itemHandler.getNewItems
     events:
@@ -145,7 +167,9 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:Query
-        Resource: 'arn:aws:dynamodb:*:*:table/users'
+        Resource: 
+          - 'arn:aws:dynamodb:*:*:table/users'
+          - 'arn:aws:dynamodb:*:*:table/users/index/mailAddress-index'
   addLogedinCart:
     handler: src/userHandler.addLogedinCart
     events:
