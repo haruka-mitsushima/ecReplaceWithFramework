@@ -23,6 +23,7 @@ provider:
     cors:
       allowedOrigins:
         - 'http://localhost:3000'
+        - 'https://main.d2ugxv1g72yo37.amplifyapp.com'
 
 functions:
   first:
